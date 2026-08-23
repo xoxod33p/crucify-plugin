@@ -28,15 +28,18 @@ public class CrucifyListener implements Listener {
             return;
         }
 
+        Location from = event.getFrom();
         Location to = event.getTo();
         if (to == null) {
             return;
         }
-        if (to.getX() != pin.getX() || to.getY() != pin.getY() || to.getZ() != pin.getZ()) {
-            Location corrected = pin.clone();
-            corrected.setYaw(to.getYaw());
-            corrected.setPitch(to.getPitch());
-            event.getPlayer().teleport(corrected);
+
+        if (from.getX() != to.getX() || from.getY() != to.getY() || from.getZ() != to.getZ()) {
+            Location locked = to.clone();
+            locked.setX(pin.getX());
+            locked.setY(pin.getY());
+            locked.setZ(pin.getZ());
+            event.setTo(locked);
         }
     }
 

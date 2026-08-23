@@ -118,9 +118,6 @@ public class CrucifyManager {
 
         GameMode originalGameMode = target.getGameMode();
 
-        target.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, 128, false, false));
-        target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, Integer.MAX_VALUE, 255, false, false));
-
         CrucifyRecord record = new CrucifyRecord(
                 target.getName(),
                 base.clone(),
@@ -136,6 +133,7 @@ public class CrucifyManager {
 
         target.teleport(camLoc);
         target.setGameMode(GameMode.SPECTATOR);
+        target.setFlySpeed(0.0f);
 
         target.sendMessage("§cYou have been bound in third-person view.");
     }
@@ -146,11 +144,9 @@ public class CrucifyManager {
             return;
         }
 
-        target.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, 128, false, false));
-        target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, Integer.MAX_VALUE, 255, false, false));
-
         target.teleport(record.camLocation());
         target.setGameMode(GameMode.SPECTATOR);
+        target.setFlySpeed(0.0f);
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (isCrucified(target.getUniqueId())) {
@@ -176,6 +172,7 @@ public class CrucifyManager {
 
         target.setSpectatorTarget(null);
         target.setGameMode(restoreMode);
+        target.setFlySpeed(0.1f);
         target.teleport(record.anchor().clone().add(0.5, 0, 0.5));
 
         if (record.mannequin() != null && record.mannequin().isValid()) {
