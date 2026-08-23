@@ -41,11 +41,6 @@ public class CrucifyManager {
         return null;
     }
 
-    public ArmorStand getCameraStand(UUID uuid) {
-        CrucifyRecord record = active.get(uuid);
-        return record == null ? null : record.cameraStand();
-    }
-
     public GameMode checkPendingOfflineRestore(UUID uuid) {
         return pendingOfflineRestores.remove(uuid);
     }
@@ -121,15 +116,6 @@ public class CrucifyManager {
         float camYaw = (yaw + 180f) % 360f;
         Location camLoc = new Location(target.getWorld(), camX, camY, camZ, camYaw, 6f);
 
-        ArmorStand cameraStand = target.getWorld().spawn(camLoc, ArmorStand.class, stand -> {
-            stand.setVisible(false);
-            stand.setGravity(false);
-            stand.setMarker(true);
-            stand.setInvulnerable(true);
-            stand.setPersistent(true);
-            stand.setCollidable(false);
-        });
-
         GameMode originalGameMode = target.getGameMode();
 
         target.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, 128, false, false));
@@ -141,7 +127,6 @@ public class CrucifyManager {
                 camLoc.clone(),
                 originalBlocks,
                 originalGameMode,
-                cameraStand,
                 mannequin
         );
         active.put(target.getUniqueId(), record);
@@ -149,12 +134,8 @@ public class CrucifyManager {
         target.getWorld().playSound(mannequinLoc, org.bukkit.Sound.BLOCK_WOOD_PLACE, 1.0f, 0.8f);
         target.getWorld().playSound(mannequinLoc, org.bukkit.Sound.BLOCK_CHAIN_PLACE, 1.0f, 0.9f);
 
+        target.teleport(camLoc);
         target.setGameMode(GameMode.SPECTATOR);
-        Bukkit.getScheduler().runTask(plugin, () -> {
-            if (isCrucified(target.getUniqueId()) && cameraStand.isValid()) {
-                target.setSpectatorTarget(cameraStand);
-            }
-        });
 
         target.sendMessage("§cYou have been bound in third-person view.");
     }
@@ -168,35 +149,11 @@ public class CrucifyManager {
         target.addPotionEffect(new PotionEffect(PotionEffectType.JUMP, Integer.MAX_VALUE, 128, false, false));
         target.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, Integer.MAX_VALUE, 255, false, false));
 
+        target.teleport(record.camLocation());
         target.setGameMode(GameMode.SPECTATOR);
 
-        ArmorStand cam = record.cameraStand();
-        if (cam == null || !cam.isValid()) {
-            ArmorStand newCam = target.getWorld().spawn(record.camLocation(), ArmorStand.class, stand -> {
-                stand.setVisible(false);
-                stand.setGravity(false);
-                stand.setMarker(true);
-                stand.setInvulnerable(true);
-                stand.setPersistent(true);
-                stand.setCollidable(false);
-            });
-            CrucifyRecord updated = new CrucifyRecord(
-                    record.playerName(),
-                    record.anchor(),
-                    record.camLocation(),
-                    record.originalBlocks(),
-                    record.originalGameMode(),
-                    newCam,
-                    record.mannequin()
-            );
-            active.put(target.getUniqueId(), updated);
-            cam = newCam;
-        }
-
-        ArmorStand finalCam = cam;
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            if (isCrucified(target.getUniqueId()) && finalCam != null && finalCam.isValid()) {
-                target.setSpectatorTarget(finalCam);
+            if (isCrucified(target.getUniqueId())) {
                 target.sendMessage("§cYou are still bound to the cross.");
             }
         }, 2L);
@@ -221,9 +178,6 @@ public class CrucifyManager {
         target.setGameMode(restoreMode);
         target.teleport(record.anchor().clone().add(0.5, 0, 0.5));
 
-        if (record.cameraStand() != null && record.cameraStand().isValid()) {
-            record.cameraStand().remove();
-        }
         if (record.mannequin() != null && record.mannequin().isValid()) {
             record.mannequin().remove();
         }
@@ -245,9 +199,6 @@ public class CrucifyManager {
             entry.getKey().getBlock().setType(entry.getValue());
         }
 
-        if (record.cameraStand() != null && record.cameraStand().isValid()) {
-            record.cameraStand().remove();
-        }
         if (record.mannequin() != null && record.mannequin().isValid()) {
             record.mannequin().remove();
         }
@@ -257,7 +208,7 @@ public class CrucifyManager {
 
     public Location getPinLocation(UUID uuid) {
         CrucifyRecord record = active.get(uuid);
-        return record == null ? null : record.anchor().clone().add(0.5, 0, 0.5);
+        return record == null ? null : record.camLocation().clone();
     }
 
     public void releaseAll() {
@@ -268,9 +219,6 @@ public class CrucifyManager {
             } else {
                 CrucifyRecord record = active.remove(uuid);
                 if (record != null) {
-                    if (record.cameraStand() != null && record.cameraStand().isValid()) {
-                        record.cameraStand().remove();
-                    }
                     if (record.mannequin() != null && record.mannequin().isValid()) {
                         record.mannequin().remove();
                     }
@@ -302,7 +250,6 @@ public class CrucifyManager {
             Location camLocation,
             Map<Location, Material> originalBlocks,
             GameMode originalGameMode,
-            ArmorStand cameraStand,
             ArmorStand mannequin
     ) {}
 }

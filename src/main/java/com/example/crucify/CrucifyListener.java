@@ -62,16 +62,9 @@ public class CrucifyListener implements Listener {
 
     @EventHandler
     public void onTeleport(PlayerTeleportEvent event) {
-        if (event.getCause() == PlayerTeleportEvent.TeleportCause.SPECTATE) {
-            if (manager.isCrucified(event.getPlayer().getUniqueId())) {
-                ArmorStand cam = manager.getCameraStand(event.getPlayer().getUniqueId());
-                if (cam != null && cam.isValid()) {
-                    Bukkit.getScheduler().runTask(plugin, () -> {
-                        if (manager.isCrucified(event.getPlayer().getUniqueId())) {
-                            event.getPlayer().setSpectatorTarget(cam);
-                        }
-                    });
-                }
+        if (manager.isCrucified(event.getPlayer().getUniqueId())) {
+            if (event.getCause() == PlayerTeleportEvent.TeleportCause.SPECTATE) {
+                event.setCancelled(true);
             }
         }
     }
