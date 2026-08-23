@@ -1,0 +1,21 @@
+name: CrucifyPlugin
+version: 1.0.0
+main: com.example.crucify.CrucifyPlugin
+api-version: 1.20
+author: YourName
+description: RP punishment plugin that pins a player to a block cross until released.
+
+commands:
+  crucify:
+    description: Pins a target player to a cross structure in third-person.
+    usage: /crucify [player]
+    permission: crucify.admin
+  release:
+    description: Releases a previously crucified player back to first-person.
+    usage: /release [player]
+    permission: crucify.admin
+
+permissions:
+  crucify.admin:
+    description: Allows server operators to use /crucify and /release
+    default: op
