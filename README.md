@@ -23,9 +23,14 @@ A Minecraft plugin that binds a player to a cross structure with a third-person 
 
 Permission node: `crucify.admin` (granted to OPs by default).
 
-To give permission using LuckPerms:
+To give permission:
 ```text
 /lp user <player> permission set crucify.admin true
+```
+
+To remove permission:
+```text
+/lp user <player> permission unset crucify.admin
 ```
 
 ## Installation
